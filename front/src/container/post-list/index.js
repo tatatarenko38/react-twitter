@@ -3,7 +3,7 @@ import Grid from "../../component/grid";
 import Box from "../../component/box";
 
 import PostCreate from "../post-create";
-import { useState, Fragment } from "react";
+import { useState, Fragment, useEffect } from "react";
 import { Alert, LOAD_STATUS, Skeleton } from "../../component/load";
 import PostItem from "../post-item";
 
@@ -62,9 +62,25 @@ export default function Container() {
     isEmpty: raw.list.length === 0,
   });
 
-  if (status === null) {
+  //Використання хук ефекту компонента
+  // [] - означає, що getData() буде спрацьовувати лише один раз
+  //коли ми виконуємо перший рендер компонента
+  useEffect(() => {
+    //перевірити чи працює
+    //alert("render");
     getData();
-  }
+    // для автоматичного оновлення постів
+    const intervalId = setInterval(() => getData(), 5000);
+
+    // функція очищення
+    return () => {
+      clearInterval(intervalId);
+    };
+  }, []);
+
+  // if (status === null) {
+  //   getData();
+  // }
 
   return (
     <Grid>

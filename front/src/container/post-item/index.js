@@ -3,7 +3,7 @@ import Grid from "../../component/grid";
 
 import PostCreate from "../post-create";
 
-import { Fragment, useState } from "react";
+import { Fragment, useState, useEffect } from "react";
 import PostContent from "../../component/post-content";
 import { Alert, LOAD_STATUS, Skeleton } from "../../component/load";
 import { getDate } from "../../util/getDate";
@@ -67,12 +67,22 @@ export default function Container({ id, username, text, date }) {
 
   //щоб відкривати та закривати
   const handleOpen = () => {
-    if (status === null) {
-      getData();
-    }
+    // if (status === null) {
+    //   getData();
+    // }
 
     setOpen(!isOpen);
   };
+
+  // коли  isOpen, тобто коли відкриваються коментарі i
+  //данні небули завантажені, (то в  alert(isOpen)),
+  //то буде виконуватись оновлення(визиватися getData())
+  useEffect(() => {
+    if (isOpen === true) {
+      // alert(isOpen);
+      getData();
+    }
+  }, [isOpen]);
 
   return (
     <Box style={{ padding: "0" }}>
@@ -114,8 +124,9 @@ export default function Container({ id, username, text, date }) {
               </Fragment>
             )}
 
-            {status === LOAD_STATUS.ERROR &&
-              (<Alert status={status} message={message} />)}
+            {status === LOAD_STATUS.ERROR && (
+              <Alert status={status} message={message} />
+            )}
 
             {status === LOAD_STATUS.SUCCESS &&
               data.isEmpty === false &&
@@ -125,8 +136,7 @@ export default function Container({ id, username, text, date }) {
                     <PostContent {...item} />
                   </Box>
                 </Fragment>
-              ))
-            }
+              ))}
           </Grid>
         </div>
       )}
