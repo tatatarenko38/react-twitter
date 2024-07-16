@@ -3,26 +3,27 @@ import Grid from "../../component/grid";
 import Box from "../../component/box";
 
 import PostCreate from "../post-create";
-import { useState, Fragment, useEffect } from "react";
+import { Fragment, useEffect, useReducer } from "react";
 import { Alert, LOAD_STATUS, Skeleton } from "../../component/load";
 import PostItem from "../post-item";
 
 import { getDate } from "../../util/getDate";
 
-export default function Container() {
-  const [status, setStatus] = useState(null);
-  const [message, setMessage] = useState("");
-  //щоб тримати данні, які отримуємо з сервера
-  const [data, setData] = useState(null);
+import {
+  requestInitialState,
+  requestReducer,
+  REQUEST_ACTION_TYPE,
+} from "../../util/request";
 
+export default function Container() {
+  const [state, dispatch] = useReducer(requestReducer, requestInitialState);
   //завантажує список постів в контейнері post-list
   const getData = async () => {
     // перевірити чи спрацьовує onCreate
     // alert(true);
 
     //аналогічно як в post-create
-
-    setStatus(LOAD_STATUS.PROGRESS);
+    dispatch({ type: REQUEST_ACTION_TYPE.PROGRESS });
     try {
       //робимо запит - за замовч завжди {method: "GET"}
       const res = await fetch("http://localhost:4000/post-list");
@@ -31,18 +32,23 @@ export default function Container() {
       const data = await res.json();
 
       if (res.ok) {
-        //якщо є данні - кладемо в setData
-        setData(convertData(data));
-        setStatus(LOAD_STATUS.SUCCESS);
+        dispatch({
+          type: REQUEST_ACTION_TYPE.SUCCESS,
+          payload: convertData(data),
+        });
       } else {
         //якщо ромилка
-        setMessage(data.message);
-        setStatus(LOAD_STATUS.ERROR);
+        dispatch({
+          type: REQUEST_ACTION_TYPE.ERROR,
+          payload: data.message,
+        });
       }
       //якщо технічна помилка в коді
     } catch (error) {
-      setMessage(error.message);
-      setStatus(LOAD_STATUS.ERROR);
+      dispatch({
+        type: REQUEST_ACTION_TYPE.ERROR,
+        payload: error.message,
+      });
     }
   };
 
@@ -70,12 +76,12 @@ export default function Container() {
     //alert("render");
     getData();
     // для автоматичного оновлення постів
-    const intervalId = setInterval(() => getData(), 5000);
+    //const intervalId = setInterval(() => getData(), 5000);
 
     // функція очищення
-    return () => {
-      clearInterval(intervalId);
-    };
+    // return () => {
+    //   clearInterval(intervalId);
+    // };
   }, []);
 
   // if (status === null) {
@@ -95,7 +101,7 @@ export default function Container() {
         </Grid>
       </Box>
 
-      {status === LOAD_STATUS.PROGRESS && (
+      {state.status === REQUEST_ACTION_TYPE.PROGRESS && (
         <Fragment>
           <Box>
             <Skeleton />
@@ -106,17 +112,17 @@ export default function Container() {
         </Fragment>
       )}
 
-      {status === LOAD_STATUS.ERROR && (
-        <Alert status={status} message={message} />
+      {state.status === REQUEST_ACTION_TYPE.ERROR && (
+        <Alert status={state.status} message={state.message} />
       )}
 
       {/* список постів */}
-      {status === LOAD_STATUS.SUCCESS && (
+      {state.status === REQUEST_ACTION_TYPE.SUCCESS && (
         <Fragment>
-          {data.isEmpty ? (
+          {state.data.isEmpty ? (
             <Alert message="Список постів пустий" />
           ) : (
-            data.list.map((item) => (
+            state.data.list.map((item) => (
               <Fragment key={item.id}>
                 <PostItem {...item} />
               </Fragment>

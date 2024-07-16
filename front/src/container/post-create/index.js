@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useReducer } from "react";
 
 import "./index.css";
 
@@ -7,16 +7,19 @@ import Grid from "../../component/grid";
 
 import { Alert, Loader, LOAD_STATUS } from "../../component/load";
 
+import {
+  requestInitialState,
+  requestReducer,
+  REQUEST_ACTION_TYPE,
+} from "../../util/request";
+
 export default function Container({
   onCreate,
   placeholder,
   button,
   id = null,
 }) {
-  // для статусу
-  const [status, setStatus] = useState(null);
-  //для повідомлення помилки
-  const [message, setMessage] = useState("");
+  const [state, dispatch] = useReducer(requestReducer, requestInitialState);
 
   const handleSubmit = (value) => {
     return sendData({ value });
@@ -28,7 +31,7 @@ export default function Container({
 
   const sendData = async (dataToSend) => {
     //показати що починається завантаження нашого запиту на сервер
-    setStatus(LOAD_STATUS.PROGRESS);
+    dispatch({ type: REQUEST_ACTION_TYPE.PROGRESS });
 
     try {
       const res = await fetch("http://localhost:4000/post-create", {
@@ -48,7 +51,7 @@ export default function Container({
       //статусу за замовч = null- де ми взагалі ще нічого
       //не робили
       if (res.ok) {
-        setStatus(null);
+        dispatch({ type: REQUEST_ACTION_TYPE.RESET });
 
         //буде виконуватись пропс onCreate(приходить з post-list),
         // який містить getData - завантажує список постів
@@ -58,13 +61,10 @@ export default function Container({
         if (onCreate) onCreate();
       } else {
         //якщо помилка
-        setMessage(data.message);
-        setStatus(LOAD_STATUS.ERROR);
+        dispatch({ type: REQUEST_ACTION_TYPE.ERROR, message: data.message });
       }
     } catch (error) {
-      //спочатку повідомлення!
-      setMessage(error.message);
-      setStatus(LOAD_STATUS.ERROR);
+      dispatch({ type: REQUEST_ACTION_TYPE.ERROR, message: error.message });
     }
   };
 
@@ -83,11 +83,11 @@ export default function Container({
         onSubmit={handleSubmit}
       />
 
-      {status === LOAD_STATUS.ERROR && (
-        <Alert status={status} message={message} />
+      {state.status === LOAD_STATUS.ERROR && (
+        <Alert status={state.status} message={state.message} />
       )}
 
-      {status === LOAD_STATUS.PROGRESS && <Loader />}
+      {state.status === LOAD_STATUS.PROGRESS && <Loader />}
     </Grid>
   );
 }
