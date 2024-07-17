@@ -3,7 +3,7 @@ import Grid from "../../component/grid";
 
 import PostCreate from "../post-create";
 
-import { Fragment, useState, useEffect, useReducer } from "react";
+import { Fragment, useState, useEffect, useReducer, useCallback } from "react";
 import PostContent from "../../component/post-content";
 import { Alert, LOAD_STATUS, Skeleton } from "../../component/load";
 import { getDate } from "../../util/getDate";
@@ -25,7 +25,10 @@ export default function Container({ id, username, text, date }) {
 
   //для відкривання вікна з коментарями
   // для отримання данних
-  const getData = async () => {
+
+  //оптимізація функції з useCallback - буде оновлюватись,
+  //коли буде змінюватись state.data.id
+  const getData = useCallback(async () => {
     dispatch({ type: REQUEST_ACTION_TYPE.PROGRESS });
     try {
       const res = await fetch(
@@ -51,7 +54,7 @@ export default function Container({ id, username, text, date }) {
         payload: error.message,
       });
     }
-  };
+  }, [state.data.id]);
 
   //або const convertData(raw) - тут уже через деструктур
   //витягуємо post

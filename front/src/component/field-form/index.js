@@ -1,8 +1,9 @@
-import { useState } from "react";
+import { useState, memo } from "react";
 
 import "./index.css";
 
-export default function Component({ placeholder, button, onSubmit }) {
+//оптимізація через memo
+function Component({ placeholder, button, onSubmit }) {
   // відповідає за значення в полі
   const [value, setValue] = useState("");
 
@@ -46,3 +47,5 @@ export default function Component({ placeholder, button, onSubmit }) {
     </div>
   );
 }
+
+export default memo(Component);

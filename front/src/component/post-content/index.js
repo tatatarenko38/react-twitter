@@ -1,8 +1,11 @@
+import { memo } from "react";
+
 import "./index.css";
 
 import Grid from "../grid";
 
-export default function Component({ username, date, text }) {
+//оптимізація через memo
+function Component({ username, date, text }) {
   return (
     <Grid>
       <div className="post-content">
@@ -15,3 +18,6 @@ export default function Component({ username, date, text }) {
     </Grid>
   );
 }
+//react сам буде перевіряти кожний пропс({ username, date, text })
+//якщо змінилися, тоді ререндер
+export default memo(Component);

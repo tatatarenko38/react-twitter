@@ -3,9 +3,16 @@ import Grid from "../../component/grid";
 import Box from "../../component/box";
 
 import PostCreate from "../post-create";
-import { Fragment, useEffect, useReducer } from "react";
+import {
+  Fragment,
+  useEffect,
+  useReducer,
+  lazy,
+  Suspense,
+  useCallback,
+} from "react";
 import { Alert, LOAD_STATUS, Skeleton } from "../../component/load";
-import PostItem from "../post-item";
+//import PostItem from "../post-item";
 
 import { getDate } from "../../util/getDate";
 
@@ -15,10 +22,16 @@ import {
   REQUEST_ACTION_TYPE,
 } from "../../util/request";
 
+//покладемо в const PostItem lazy, яка повертає post-item
+const PostItem = lazy(() => import("../post-item"));
+
 export default function Container() {
   const [state, dispatch] = useReducer(requestReducer, requestInitialState);
+
   //завантажує список постів в контейнері post-list
-  const getData = async () => {
+  //оптимізація функції з useCallback -не  буде оновлюватись,
+
+  const getData = useCallback(async () => {
     // перевірити чи спрацьовує onCreate
     // alert(true);
 
@@ -50,7 +63,7 @@ export default function Container() {
         payload: error.message,
       });
     }
-  };
+  }, []);
 
   // raw - сирий об'єкт з данними - ті, які ми відправляємо в ендпоїнті
   //там є лише list, тому створюється новий об'єкт з властивістю
@@ -124,7 +137,15 @@ export default function Container() {
           ) : (
             state.data.list.map((item) => (
               <Fragment key={item.id}>
-                <PostItem {...item} />
+                <Suspense
+                  fallback={
+                    <Box>
+                      <Skeleton />
+                    </Box>
+                  }
+                >
+                  <PostItem {...item} />
+                </Suspense>
               </Fragment>
             ))
           )}
