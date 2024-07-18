@@ -1,72 +1,43 @@
-import { React, useState, useEffect } from "react";
+import { React, useState, useMemo, createContext } from "react";
 
 import Page from "./component/page";
 
 import PostList from "./container/post-list";
 
-// function App() {
-//   //для кружечка, що прікріплений до курсору
+//контекст компонента(змінити колір кнопки(в компоненті field-form) при зміні теми)
+export const THEME_TYPE = {
+  LIGHT: "light",
+  DARK: "dark",
+};
 
-//   const [position, setPosition] = useState({ x: 0, y: 0 });
-
-//   // useEffect(() => {
-//   //   function handleMove(e) {
-//   //     setPosition({ x: e.clientX, y: e.clientY });
-//   //   }
-
-//   //   window.addEventListener("pointermove", handleMove);
-//   //   return () => {
-//   //     //при розмонтуванні прибирається
-//   //     window.removeEventListener("pointermove", handleMove);
-//   //   };
-//   // }, []);
-
-//   // або
-
-//   useWindowListener("pointermove", (e) => {
-//     setPosition({ x: e.clientX, y: e.clientY });
-//   });
-
-//   return (
-//     <Page>
-//       <PostList />
-
-//       {/* стилі для кружечка */}
-//       <div
-//         style={{
-//           position: "absolute",
-//           backgroundColor: "pink",
-//           borderRadius: "50%",
-//           opacity: 0.6,
-//           transform: `translate(${position.x}px, ${position.y}px)`,
-//           pointerEvents: "none",
-//           left: -20,
-//           top: -20,
-//           width: 40,
-//           height: 40,
-//         }}
-//       />
-//     </Page>
-//   );
-// }
-
-// //власна функція (загальна) для  використання
-// // в різних компонентах
-// //  спрцьовує коли eventType,listener - змінюються
-// export function useWindowListener(eventType, listener) {
-//   useEffect(() => {
-//     window.addEventListener(eventType, listener);
-
-//     return () => {
-//       window.removeEventListener(eventType, listener);
-//     };
-//   }, [eventType, listener]);
-// }
+//(null) - коли немає значень за замовчуванням
+export const ThemeContext = createContext(null);
 
 function App() {
+  const [currentTheme, setTheme] = useState(THEME_TYPE.DARK);
+
+  const handleChangeTheme = () => {
+    setTheme((prevTheme) => {
+      if (prevTheme === THEME_TYPE.DARK) {
+        return THEME_TYPE.LIGHT;
+      } else {
+        return THEME_TYPE.DARK;
+      }
+    });
+  };
+
+  //повертає об'єкт, який ми будемо оновлювати,
+  //якщо [currentTheme] була змінена
+  const theme = useMemo(
+    () => ({ value: currentTheme, toggle: handleChangeTheme }),
+    [currentTheme]
+  );
+
   return (
     <Page>
-      <PostList />
+      <ThemeContext.Provider value={theme}>
+        <PostList theme={theme} />
+      </ThemeContext.Provider>
     </Page>
   );
 }

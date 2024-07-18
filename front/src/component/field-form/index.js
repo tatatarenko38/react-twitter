@@ -1,6 +1,7 @@
-import { useState, memo } from "react";
+import { useState, memo, useContext } from "react";
 
 import "./index.css";
+import { ThemeContext } from "../../App";
 
 //оптимізація через memo
 function Component({ placeholder, button, onSubmit }) {
@@ -27,6 +28,12 @@ function Component({ placeholder, button, onSubmit }) {
   //генерується в моменті щоб вказати активна кнопка чи ні
   const isDisabled = value.length === 0;
 
+  //контекст компонента(змінити колір кнопки(код з App.js) при зміні теми)
+  // useContext
+
+  const theme = useContext(ThemeContext);
+  console.log(theme);
+
   return (
     <div className="field-form">
       <textarea
@@ -43,6 +50,11 @@ function Component({ placeholder, button, onSubmit }) {
         className="field-form__button"
       >
         {button}
+      </button>
+
+      {/* кнопка при зміні теми */}
+      <button onClick={theme.toggle} className="field-form__button">
+        Change theme
       </button>
     </div>
   );

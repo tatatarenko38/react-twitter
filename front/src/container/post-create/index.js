@@ -103,7 +103,7 @@ function Container({ onCreate, placeholder, button, id = null }) {
 }
 
 export default memo(Container, (prev, next) => {
-  console.log(prev, next);
+  //console.log(prev, next);
 
   // щоб не відбувався перерендер(в нас пропси не змінюються)
   return true;
